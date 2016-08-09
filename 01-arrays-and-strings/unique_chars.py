@@ -3,6 +3,8 @@
 # Example: Funny StorY => NO
 # Example: Quick tall dog => YES
 
+import unittest
+
 class UniqueCharacterString:
     'Checks a string for duplicate characters'
 
@@ -36,6 +38,21 @@ class UniqueCharacterString:
 
         return True
 
-a = UniqueCharacterString()
-print(a.hasUniqueChars('Lucky dog'))
-print(a.hasUniqueChars('Funny story'))
+class TestUniqueCharacterString(unittest.TestCase):
+    def setUp(self):
+        self.testee = UniqueCharacterString()
+
+    def test_hasspace(self):
+        self.assertTrue(self.testee.hasUniqueChars('Lucky dog'))
+
+    def test_hasnospace(self):
+        self.assertTrue(self.testee.hasUniqueChars('Fun'))
+
+    def test_shouldfail(self):
+        self.assertFalse(self.testee.hasUniqueChars('Cool'))
+
+    def test_shouldfailwithspaces(self):
+        self.assertFalse(self.testee.hasUniqueChars('Cool looc'))
+
+if __name__ == '__main__':
+    unittest.main()
