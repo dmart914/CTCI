@@ -1,81 +1,71 @@
-function arrayToLuna(arr) {
+'use strict'
+
+function Node(data) {
+  this.data = data
+  this.parent = null
+  this.children = []
+}
+
+function Tree(rootData) {
+  var rootData = new Node(rootData)
+  this._root = rootData
+}
+
+function DFS_Luna(n) {
   var resultString = ''
-  var resultStringClosers = []
 
-  for (let i=0; i<arr.length; i++) {
-    let thisItem = arr[i]
-    let thisItemKeys = Object.keys(thisItem)
-
-    console.log(thisItemKeys)
-
-    if (i > 0) {
-      resultString += ', '
+  for (var i=0; i<n.children.length; i++) {
+    var thisChild = n.children[i]
+    if (thisChild.data == 'IMG') {
+      resultString += 'IMG({'
+      resultString += DFS_Luna(thisChild)
+      resultString += '})'
+    } else {
+      resultString += thisChild.data + '(['
+      resultString += DFS_Luna(thisChild)
+      resultString += '])'
     }
 
-    for (let j=0; j<thisItemKeys.length; j++) {
-      let thisKey = thisItemKeys[j]
-
-
-
-      if (thisKey == 'IMG') {
-        resultString += thisKey + '({})'
-      } else {
-        resultString += thisKey + '(['
-        resultStringClosers.push('])')
-      }
-
-      if (typeof thisItem[thisKey] == 'object') {
-        resultString += arrayToLuna(thisItem[thisKey])
-      }
-
-    }
-
-    for (let j=0; j<thisItemKeys.length; j++) {
-      resultString += resultStringClosers.pop() || ''
+    if (i < n.children.length - 1) {
+      resultString += "\, "
     }
   }
-
-
 
   return resultString
 
 }
 
-// DIV([P([IMG({})]), B([])])
-var test = [{'DIV': [
-  {P: [
-    {IMG: true}
-  ]},
-  {B: true}
-]}]
-
-console.log(arrayToLuna(test))
-
 function htmlToLuna(html) {
     var htmlParts = html.match(/<\/?[a-zA-Z \/]+>/g)
-    var resultString = ''
+    var htmlTree = new Tree(null)
+    var currentNode = htmlTree._root
 
-    for (index in htmlParts) {
-        // Remove the carrots...
-      var stringToPush = htmlParts[index].substr(1, htmlParts[index].length-2).toUpperCase()
-      if (stringToPush[0] == '/') {
-        // End tag...
-        resultString += ')'
-      } else if (stringToPush[stringToPush.length-1] == '/') {
-        // Solo tag
-        resultString += '[' +
-          stringToPush.substr(0, stringToPush.length-2) + '{}'
-          + ']'
-      } else {
-        resultString += stringToPush + '('
-      }
-
-
+    if (htmlParts == null) {
+      return ''
     }
 
-    return resultString
+    for (var i=0; i<htmlParts.length; i++) {
+      var thisPart = htmlParts[i]
+      // Remove the carrots...
+      var stringToPush = thisPart.substr(1, thisPart.length-2).toUpperCase()
 
+      if (stringToPush[0] == '/') {
+        // End
+        currentNode = currentNode.parent
 
+      } else if (stringToPush[stringToPush.length-1] == '/') {
+        var thisNode = new Node(stringToPush.substr(0, stringToPush.length-2))
+        thisNode.parent = currentNode
+        currentNode.children.push(thisNode)
+
+      } else {
+        var thisNode = new Node(stringToPush)
+        thisNode.parent = currentNode
+        currentNode.children.push(thisNode)
+        currentNode = thisNode
+
+      }
+    }
+
+    return DFS_Luna(htmlTree._root)
 }
-
-// console.log(htmlToLuna('<div><img /></div>'))
